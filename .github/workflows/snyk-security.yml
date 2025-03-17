@@ -27,5 +27,17 @@ jobs:
       - name: Authenticate Snyk
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
-      - name: Run Snyk Code test
-        run: snyk code test
+      - name: Run Snyk Code test (JSON format)
+        run: snyk code test --json > snyk-code.json || true
+
+      - name: Convert JSON to HTML
+        run: |
+          npm install -g snyk-to-html
+          mkdir -p snyk-reports
+          snyk-to-html -i snyk-code.json -o snyk-reports/snyk-report.html
+
+      - name: Upload Snyk HTML Report as an Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-html-report
+          path: snyk-reports/snyk-report.html
